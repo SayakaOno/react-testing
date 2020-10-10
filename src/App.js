@@ -1,47 +1,43 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './App.css';
 
-class App extends React.Component {
-  state = {
-    counter: 0,
-    error: false
-  };
+const App = () => {
+  const [counter, setCounter] = useState(0);
+  const [error, setError] = useState(false);
 
-  onIncrementClick = () => {
-    if (this.state.error) {
-      this.setState({ error: false });
+  const onIncrementClick = () => {
+    if (error) {
+      setError(false);
     }
-    this.setState({ counter: this.state.counter + 1 });
+    setCounter(counter + 1);
   };
 
-  onDecrementClick = () => {
-    if (this.state.counter === 0) {
-      this.setState({ error: true });
+  const onDecrementClick = () => {
+    if (counter === 0) {
+      setError(true);
     } else {
-      this.setState({ counter: this.state.counter - 1 });
+      setCounter(counter - 1);
     }
   };
 
-  render() {
-    return (
-      <div data-test="component-app">
-        <h1 data-test="counter-display">
-          The counter is currently {this.state.counter}
-        </h1>
-        {this.state.error && (
-          <p data-test="error-message" style={{ color: 'red' }}>
-            The counter cannot go below 0
-          </p>
-        )}
-        <button data-test="increment-button" onClick={this.onIncrementClick}>
-          increment counter
-        </button>
-        <button data-test="decrement-button" onClick={this.onDecrementClick}>
-          decrement counter
-        </button>
-      </div>
-    );
-  }
-}
+  return (
+    <div data-test="component-app">
+      <h1 data-test="counter-display">
+        The counter is currently <span data-test="count">{counter}</span>
+      </h1>
+      {error && (
+        <p data-test="error-message" style={{ color: 'red' }}>
+          The counter cannot go below 0
+        </p>
+      )}
+      <button data-test="increment-button" onClick={onIncrementClick}>
+        increment counter
+      </button>
+      <button data-test="decrement-button" onClick={onDecrementClick}>
+        decrement counter
+      </button>
+    </div>
+  );
+};
 
 export default App;

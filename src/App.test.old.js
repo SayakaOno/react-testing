@@ -12,7 +12,13 @@ Enzyme.configure({ adapter: new EnzymeAdapter() });
  * @param {any} state - Initial state for setup.
  * @returns {ShallowWrapper}
  */
-const setup = () => shallow(<App />);
+const setup = (props = {}, state = null) => {
+  const wrapper = shallow(<App {...props} />);
+  if (state) {
+    wrapper.setState(state);
+  }
+  return wrapper;
+};
 
 /**
  * Return ShallowWrapper containing node(s) with the given data-test value.
@@ -21,12 +27,12 @@ const setup = () => shallow(<App />);
  * @returns {ShallowWrapper}
  */
 const findByTestAttr = (wrapper, val) => {
-  return wrapper.find(`[data-test='${val}']`);
+  return wrapper.find(`[data-test="${val}"]`);
 };
 
 test('renders without error', () => {
   const wrapper = setup();
-  const appComponent = findByTestAttr(wrapper, 'component-app');
+  const appComponent = wrapper.find("[data-test='component-app']");
   expect(appComponent.length).toBe(1);
 });
 
@@ -38,61 +44,53 @@ test('renders increment button', () => {
 
 test('renders counter display', () => {
   const wrapper = setup();
-  const display = findByTestAttr(wrapper, 'counter-display');
-  expect(display.length).toBe(1);
+  const counterDisplay = findByTestAttr(wrapper, 'counter-display');
+  expect(counterDisplay.length).toBe(1);
 });
 
 test('counter starts at 0', () => {
   const wrapper = setup();
-  const count = findByTestAttr(wrapper, 'count').text();
-  expect(count).toBe('0');
+  const initialCounterState = wrapper.state('counter');
+  expect(initialCounterState).toBe(0);
 });
 
 test('clicking button increments counter display', () => {
-  const wrapper = setup();
+  const counter = 7;
+  const wrapper = setup(null, { counter });
   const button = findByTestAttr(wrapper, 'increment-button');
   button.simulate('click');
-
-  const count = findByTestAttr(wrapper, 'count').text();
-  expect(count).toBe('1');
+  const counterDisplay = findByTestAttr(wrapper, 'counter-display');
+  expect(counterDisplay.text()).toContain(counter + 1);
 });
 
 test('clicking decrement button decrements counter display', () => {
-  const wrapper = setup();
-  const incrementButton = findByTestAttr(wrapper, 'increment-button');
-  incrementButton.simulate('click');
+  const counter = 4;
+  const wrapper = setup(null, { counter });
   const decrementButton = findByTestAttr(wrapper, 'decrement-button');
   decrementButton.simulate('click');
-
-  const counter = findByTestAttr(wrapper, 'count').text();
-  expect(counter).toBe('0');
+  const counterDisplay = findByTestAttr(wrapper, 'counter-display');
+  expect(counterDisplay.text()).toContain(counter - 1);
 });
 
 test("count doesn't go below zero", () => {
   const wrapper = setup();
-  const button = findByTestAttr(wrapper, 'decrement-button');
-  button.simulate('click');
-
-  const count = findByTestAttr(wrapper, 'count').text();
-  expect(count).toBe('0');
+  const decrementButton = findByTestAttr(wrapper, 'decrement-button');
+  decrementButton.simulate('click');
+  const counterDisplay = findByTestAttr(wrapper, 'counter-display');
+  expect(counterDisplay.text()).toContain(0);
 });
 
 test('display an error message when counter is 0 and decrement button is clicked ', () => {
   const wrapper = setup();
-  const button = findByTestAttr(wrapper, 'decrement-button');
-  button.simulate('click');
-
-  const errorMessage = findByTestAttr(wrapper, 'error-message');
-  expect(errorMessage.length).toBe(1);
+  const decrementButton = findByTestAttr(wrapper, 'decrement-button');
+  decrementButton.simulate('click');
+  expect(wrapper.find(`[data-test="error-message"]`).exists()).toBe(true);
 });
 
 test('error is removed when increment button is clicked', () => {
-  const wrapper = setup();
-  const decrementButton = findByTestAttr(wrapper, 'decrement-button');
-  decrementButton.simulate('click');
+  const error = true;
+  const wrapper = setup(null, { error });
   const incrementButton = findByTestAttr(wrapper, 'increment-button');
   incrementButton.simulate('click');
-
-  const errorMessage = findByTestAttr(wrapper, 'error-message');
-  expect(errorMessage.length).toBe(0);
+  expect(wrapper.find(`[data-test="error-message"]`).exists()).toBe(false);
 });
